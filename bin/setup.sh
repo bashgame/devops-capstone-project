@@ -3,6 +3,9 @@ echo "****************************************"
 echo " Setting up Capstone Environment"
 echo "****************************************"
 
+echo "Updating prompt..."
+export PS1='\[\033[01;34m\]\W\[\033[00m\]\$ '
+
 echo "Updating package manager..."
 sudo add-apt-repository -y ppa:deadsnakes/ppa
 
