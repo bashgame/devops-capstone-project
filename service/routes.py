@@ -81,8 +81,26 @@ def list_all_accounts():
 # READ AN ACCOUNT
 ######################################################################
 
-# ... place you code here to READ an account ...
+@app.route("/accounts/<int:id>", methods=["GET"])
+def get_accounts(id):
+    """
+    Read an account
+    This endpoint will return an account, if it exists
+    """
+    app.logger.info("Request to read an Account")
 
+    account = Account()
+    result = account.find(id)
+    if result == None:
+        return {}, status.HTTP_404_NOT_FOUND
+    
+    message = result.serialize()
+    # Uncomment once get_accounts has been implemented
+    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
+    location_url = "/"  # Remove once get_accounts has been implemented
+    return make_response(
+        jsonify(message), status.HTTP_200_OK, {"Location": location_url}
+    )
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
