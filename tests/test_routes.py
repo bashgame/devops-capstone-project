@@ -124,3 +124,24 @@ class TestAccountService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     # ADD YOUR TEST CASES HERE ...
+
+    def test_get_no_accounts(self):
+        """It should return an empty list when there are no accounts"""
+        response = self.client.get(
+            BASE_URL
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.get_json(), [])
+
+    def test_get_all_accounts(self):
+        """ It should return a list with one accounts"""
+        NUM_ACCOUNTS = 5
+        self._create_accounts(NUM_ACCOUNTS)
+
+        response = self.client.get(BASE_URL)
+        data = response.get_json()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(data), NUM_ACCOUNTS)
+        
