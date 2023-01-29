@@ -1,6 +1,9 @@
 # Pin Werkzeug because it keeps breaking Flask!
 Werkzeug==2.1.2
 
+# SQLAlchemy 2.0.0 seems to be breaking our code
+SQLAlchemy==1.4.46
+
 # Runtime dependencies
 Flask==2.1.2
 Flask-SQLAlchemy==2.5.1
