@@ -218,3 +218,17 @@ class TestAccountService(TestCase):
             content_type="test/html"
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    # Tests for delete_accounts
+    def test_delete_accounts(self):
+        """It should Delete an Account"""
+        account_id = self._create_accounts(1)[0].id
+        response = self.client.delete(
+            f"{BASE_URL}/{account_id}"
+        )
+        removed = self.client.get(
+            f"{BASE_URL}/{account_id}"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(removed.status_code, status.HTTP_404_NOT_FOUND)
