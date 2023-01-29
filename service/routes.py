@@ -62,7 +62,7 @@ def create_accounts():
 ######################################################################
 
 @app.route("/accounts", methods=["GET"])
-def list_all_accounts():
+def list_accounts():
     """
     Lists all Accounts
     This endpoint will return a list of all accounts
@@ -106,7 +106,29 @@ def get_accounts(id):
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
 
-# ... place you code here to UPDATE an account ...
+@app.route("/accounts/<int:account_id>", methods=["PUT"])
+def put_accounts(account_id):
+    """
+    Update an account
+    This endpoint will return the new account info, if it exists
+    """
+    app.logger.info("Request to update an Account")
+
+    account = Account()
+    result = account.find(account_id)
+    if result == None:
+        return {}, status.HTTP_404_NOT_FOUND
+    
+    check_content_type("application/json")
+    account.deserialize(request.get_json())
+    account.update()
+    message = account.serialize()
+    # Uncomment once get_accounts has been implemented
+    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
+    location_url = "/"  # Remove once get_accounts has been implemented
+    return make_response(
+        jsonify(message), status.HTTP_200_OK, {"Location": location_url}
+    )
 
 
 ######################################################################
