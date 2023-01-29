@@ -145,3 +145,27 @@ class TestAccountService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(data), NUM_ACCOUNTS)
         
+    def test_read_account(self):
+        """ It should return a single account """
+        account = AccountFactory()
+        response = self.client.post(
+            BASE_URL,
+            json=account.serialize(),
+            content_type="application/json"
+        )
+
+        # Make sure location header is set
+        location = response.headers.get("Location", None)
+        self.assertIsNotNone(location)
+
+        # Check the data is correct
+        userid = response.get_json()["id"]
+        result = self.client.get(f"{BASE_URL}/{userid}").get_json()
+        self.assertEqual(result["name"], account.name)
+
+    def test_read_nonexistent_account(self):
+        """ It should return 404 not found """
+        response = self.client.get(
+            f"{BASE_URL}/1", content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
