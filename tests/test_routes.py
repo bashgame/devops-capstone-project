@@ -126,7 +126,7 @@ class TestAccountService(TestCase):
     # Tests for list_accounts
 
     def test_list_no_accounts(self):
-        """It should return an empty list when there are no accounts"""
+        """It should return an empty List when there are no Accounts"""
         response = self.client.get(
             BASE_URL
         )
@@ -192,7 +192,7 @@ class TestAccountService(TestCase):
         self.assertEqual(updated_account_info["name"], new_account_info.name)
 
     def test_update_no_account(self):
-        """ It should not Update an Account that doesn't exist """
+        """ It should not error when we Update a non Account """
         account_id = 0
         new_account_info = AccountFactory()
         response = self.client.put(
@@ -201,6 +201,20 @@ class TestAccountService(TestCase):
             content_type="application/json"
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_idempotency(self):
+        """It should be idempotent when we Update the same Account"""
+        account_id = self._create_accounts(1)[0].id
+        new_account_info = AccountFactory()
+        for _ in range(5):
+            response = self.client.put(
+                f"{BASE_URL}/{account_id}",
+                json=new_account_info.serialize(),
+                content_type="application/json"
+            )
+            updated_account_info = response.get_json()
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(updated_account_info["name"], new_account_info.name)
 
     def test_update_bad_request(self):
         """It should not Update an Account when sending the wrong data"""
@@ -218,3 +232,45 @@ class TestAccountService(TestCase):
             content_type="test/html"
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    # Tests for delete_accounts
+    def test_delete_accounts(self):
+        """It should Delete an Account"""
+        account_id = self._create_accounts(1)[0].id
+        response = self.client.delete(
+            f"{BASE_URL}/{account_id}"
+        )
+        removed = self.client.get(
+            f"{BASE_URL}/{account_id}"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(removed.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_non_account(self):
+        """It should not error when we Delete non-Account"""
+        account_id = 0
+        # make sure the account doesn't exist
+        not_found = self.client.get(
+            f"{BASE_URL}/{account_id}"
+        )
+        self.assertEqual(not_found.status_code, status.HTTP_404_NOT_FOUND)
+
+        # make sure we get the response we want
+        response = self.client.delete(
+            f"{BASE_URL}/{account_id}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_idempotency(self):
+        """It should be idempotent when we Delete the same Account"""
+        account_id = self._create_accounts(1)[0].id
+        for _ in range(5):
+            response = self.client.delete(
+                f"{BASE_URL}/{account_id}"
+            )
+            removed = self.client.get(
+                f"{BASE_URL}/{account_id}"
+            )
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+            self.assertEqual(removed.status_code, status.HTTP_404_NOT_FOUND)
