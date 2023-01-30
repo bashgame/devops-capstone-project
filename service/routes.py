@@ -52,7 +52,7 @@ def create_accounts():
     message = account.serialize()
     # Uncomment once get_accounts has been implemented
     location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    
+
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
@@ -60,6 +60,7 @@ def create_accounts():
 ######################################################################
 # LIST ALL ACCOUNTS
 ######################################################################
+
 
 @app.route("/accounts", methods=["GET"])
 def list_accounts():
@@ -69,14 +70,14 @@ def list_accounts():
     or an empty list if there are no accounts
     """
     app.logger.info("Request to list all Accounts")
-    
+
     temp_accounts = Account.all()
 
     account_list = [account.serialize() for account in temp_accounts]
 
     app.logger.info(f"Returning {len(account_list)} accounts")
     return jsonify(account_list), status.HTTP_200_OK
-    
+
 
 ######################################################################
 # READ AN ACCOUNT
@@ -96,12 +97,13 @@ def get_accounts(account_id):
             status.HTTP_404_NOT_FOUND,
             f"Account with id [{account_id}] could not be found."
         )
-    
+
     return account.serialize(), status.HTTP_200_OK
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
+
 
 @app.route("/accounts/<int:account_id>", methods=["PUT"])
 def update_accounts(account_id):
@@ -117,7 +119,7 @@ def update_accounts(account_id):
             status.HTTP_404_NOT_FOUND,
             f"Account with id [{account_id}] could not be found."
         )
-    
+
     check_content_type("application/json")
     account.deserialize(request.get_json())
     account.update()
