@@ -51,8 +51,8 @@ def create_accounts():
     account.create()
     message = account.serialize()
     # Uncomment once get_accounts has been implemented
-    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
+    location_url = url_for("get_accounts", account_id=account.id, _external=True)
+    
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
@@ -74,6 +74,7 @@ def list_accounts():
 
     account_list = [account.serialize() for account in temp_accounts]
 
+    app.logger.info(f"Returning {len(account_list)} accounts")
     return jsonify(account_list), status.HTTP_200_OK
     
 
@@ -81,54 +82,46 @@ def list_accounts():
 # READ AN ACCOUNT
 ######################################################################
 
-@app.route("/accounts/<int:id>", methods=["GET"])
-def get_accounts(id):
+@app.route("/accounts/<int:account_id>", methods=["GET"])
+def get_accounts(account_id):
     """
     Read an account
     This endpoint will return an account, if it exists
     """
     app.logger.info("Request to read an Account")
 
-    account = Account()
-    result = account.find(id)
-    if result == None:
-        return {}, status.HTTP_404_NOT_FOUND
+    account = Account().find(account_id)
+    if not account:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Account with id [{account_id}] could not be found."
+        )
     
-    message = result.serialize()
-    # Uncomment once get_accounts has been implemented
-    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
-    return make_response(
-        jsonify(message), status.HTTP_200_OK, {"Location": location_url}
-    )
+    return account.serialize(), status.HTTP_200_OK
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
 
 @app.route("/accounts/<int:account_id>", methods=["PUT"])
-def put_accounts(account_id):
+def update_accounts(account_id):
     """
     Update an account
     This endpoint will return the new account info, if it exists
     """
     app.logger.info("Request to update an Account")
 
-    account = Account()
-    result = account.find(account_id)
-    if result == None:
-        return {}, status.HTTP_404_NOT_FOUND
+    account = Account().find(account_id)
+    if not account:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Account with id [{account_id}] could not be found."
+        )
     
     check_content_type("application/json")
     account.deserialize(request.get_json())
     account.update()
-    message = account.serialize()
-    # Uncomment once get_accounts has been implemented
-    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
-    return make_response(
-        jsonify(message), status.HTTP_200_OK, {"Location": location_url}
-    )
+    return account.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
@@ -137,10 +130,15 @@ def put_accounts(account_id):
 
 @app.route("/accounts/<int:account_id>", methods=["DELETE"])
 def delete_accounts(account_id):
-    account = Account()
-    deleted = account.find(account_id)
-    if (deleted != None) :
-        deleted.delete()
+    """
+    Delete an account
+    This endpoint will delete an account, if it exists
+    """
+    app.logger.info("Request to delete an Account")
+
+    account = Account().find(account_id)
+    if account:
+        account.delete()
 
     return {}, status.HTTP_204_NO_CONTENT
 
