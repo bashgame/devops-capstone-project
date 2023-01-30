@@ -120,7 +120,6 @@ class TestAccountService(TestCase):
         new_account = response.get_json()
         self.assertNotEqual(new_account["date_joined"], None)
 
-
     def test_bad_request(self):
         """It should not Create an Account when sending the wrong data"""
         response = self.client.post(BASE_URL, json={"name": "not enough data"})
@@ -143,7 +142,7 @@ class TestAccountService(TestCase):
         response = self.client.get(
             BASE_URL
         )
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get_json(), [])
 
