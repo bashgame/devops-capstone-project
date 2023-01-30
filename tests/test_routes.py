@@ -108,6 +108,19 @@ class TestAccountService(TestCase):
         self.assertEqual(new_account["phone_number"], account.phone_number)
         self.assertEqual(new_account["date_joined"], str(account.date_joined))
 
+    def test_create_account_with_no_date(self):
+        """It should Create a new Account without a date"""
+        account = AccountFactory().serialize()
+        del account["date_joined"]
+        response = self.client.post(
+            BASE_URL,
+            json=account,
+            content_type="application/json"
+        )
+        new_account = response.get_json()
+        self.assertNotEqual(new_account["date_joined"], None)
+
+
     def test_bad_request(self):
         """It should not Create an Account when sending the wrong data"""
         response = self.client.post(BASE_URL, json={"name": "not enough data"})
@@ -274,3 +287,18 @@ class TestAccountService(TestCase):
             )
             self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
             self.assertEqual(removed.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Tests for Error Handlers
+    def test_unsupported_method(self):
+        """It should catch errors for bad methods"""
+        response = self.client.patch(
+            BASE_URL
+        )
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_no_endpoint(self):
+        """It should catch errors for resources not found"""
+        response = self.client.get(
+            f"{BASE_URL}/this-doesnt-exist"
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
